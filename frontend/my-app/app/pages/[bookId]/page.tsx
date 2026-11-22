@@ -1,6 +1,7 @@
 "use client";
 
 import { use, useEffect, useMemo, useState } from "react";
+import { apiUrl } from "@/lib/api-url";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -24,9 +25,6 @@ interface Props {
   params: Promise<{ bookId: string }>;
 }
 
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
-
 const PAGE_SIZE = 10;
 
 export default function BookPages({ params }: Props) {
@@ -49,7 +47,7 @@ export default function BookPages({ params }: Props) {
     async function fetchPages() {
       try {
         const response = await fetch(
-          `${API_URL}/books/${bookId}/pages`,
+          apiUrl(`/books/${bookId}/pages`),
           { signal: controller.signal }
         );
 

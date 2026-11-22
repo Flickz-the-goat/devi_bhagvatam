@@ -1,6 +1,7 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
+import { apiUrl } from "@/lib/api-url";
 import Link from "next/link";
 
 import {
@@ -12,9 +13,6 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
 // =========================================================
 // TYPES
@@ -255,7 +253,7 @@ export default function ReadPage({ params }: Props) {
     async function fetchPage() {
       try {
         const response = await fetch(
-          `${API_URL}/pages/${pageId}/content`,
+          apiUrl(`/pages/${pageId}/content`),
           { signal: controller.signal }
         );
 
@@ -271,7 +269,7 @@ export default function ReadPage({ params }: Props) {
 
         // Fetch all pages for navigation
         const pagesResponse = await fetch(
-          `${API_URL}/books/${data.book_id}/pages`,
+          apiUrl(`/books/${data.book_id}/pages`),
           { signal: controller.signal }
         );
 

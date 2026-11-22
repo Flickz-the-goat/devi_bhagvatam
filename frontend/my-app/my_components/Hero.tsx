@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { apiUrl } from "@/lib/api-url";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, BookOpen, Star } from "lucide-react";
 import Link from "next/link";
@@ -9,9 +10,6 @@ interface Book {
   id: number;
   name: string;
 }
-
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
 const STORAGE_KEY = "devi-bookmarked-books";
 
@@ -48,7 +46,7 @@ useEffect(() => {
 
     async function fetchBooks() {
       try {
-        const response = await fetch(`${API_URL}/books`, {
+        const response = await fetch(apiUrl(`/books`), {
           signal: controller.signal,
         });
 

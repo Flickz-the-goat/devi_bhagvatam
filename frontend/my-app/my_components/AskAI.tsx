@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import { GoogleGenAI, Type } from "@google/genai";
 import { Button } from "@/components/ui/button";
 import { Stars, Loader2 } from "lucide-react";
 
@@ -24,36 +23,19 @@ export default function AskAI({
     try {
       setLoading(true);
 
-      const ai = new GoogleGenAI({
-        apiKey: "${process.env.GOOGLE_API}"
+      const response = await fetch("/api/ask-ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ context, type }),
       });
 
-      const prompt =
-        type === "translate"
-          ? `
-          You are given a shloka, take each word and translate it dont translate the shloka
-          as a whole.
-          Context:
-${context}`
-          : `The user is trying to understand a Sanskrit word or word-part.
-Give only a short, direct definition.
-If they supplied a derived definition, briefly correct or clarify it if needed.
+      if (!response.ok) {
+        throw new Error("Unable to generate feedback.");
+      }
 
-Context:
-${context}`;
-
-      const response = await ai.models.generateContent({
-        model: "gemini-3.8-flash",
-        contents: prompt,
-        config: {
-          candidateCount: 1,
-       },
-      });
-
-      console.log(response.text)
-      setResult(response.text?.trim() ?? "");
-    } catch (error) {
-      console.error(error);
+      const { feedback }: AIResult = await response.json();
+      setResult(feedback);
+    } catch {
       setResult("Unable to generate feedback.");
     } finally {
       setLoading(false);
