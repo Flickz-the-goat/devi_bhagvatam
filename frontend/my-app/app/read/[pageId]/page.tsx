@@ -351,7 +351,7 @@ export default function ReadPage({ params }: Props) {
           {error || "Page not found"}
         </p>
 
-        <Button asChild variant="outline">
+        <Button variant="outline">
           <Link href="/">
             Return to Library
           </Link>
@@ -368,7 +368,7 @@ export default function ReadPage({ params }: Props) {
     <main className="mx-auto min-h-screen w-full max-w-7xl px-5 py-8 md:px-8">
       {/* Top navigation */}
       <header className="mb-8 flex flex-wrap items-center justify-between gap-4 border-b pb-6">
-        <Button variant="ghost" size="sm" asChild>
+        <Button variant="ghost" size="sm" >
           <Link href={`/pages/${page.book_id}`}>
             <ArrowLeft className="size-4" />
             All Pages
@@ -390,7 +390,6 @@ export default function ReadPage({ params }: Props) {
             variant="outline"
             size="icon"
             disabled={!previousPage}
-            asChild={Boolean(previousPage)}
             aria-label="Previous page"
           >
             {previousPage ? (
@@ -406,7 +405,6 @@ export default function ReadPage({ params }: Props) {
             variant="outline"
             size="icon"
             disabled={!nextPage}
-            asChild={Boolean(nextPage)}
             aria-label="Next page"
           >
             {nextPage ? (
@@ -558,7 +556,7 @@ export default function ReadPage({ params }: Props) {
       {/* Bottom navigation */}
       <footer className="mt-16 flex items-center justify-between border-t py-8">
         {previousPage ? (
-          <Button variant="outline" asChild>
+          <Button variant="outline" >
             <Link href={`/read/${previousPage.id}`}>
               <ChevronLeft className="size-4" />
               Previous
@@ -573,7 +571,7 @@ export default function ReadPage({ params }: Props) {
         </span>
 
         {nextPage ? (
-          <Button asChild>
+          <Button >
             <Link href={`/read/${nextPage.id}`}>
               Next
               <ChevronRight className="size-4" />
