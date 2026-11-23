@@ -5,7 +5,6 @@ import { apiUrl } from "@/lib/api-url";
 import Link from "next/link";
 import {
   ArrowLeft,
-  ArrowRight,
   ChevronLeft,
   ChevronRight,
   Search,
@@ -29,7 +28,10 @@ const PAGE_SIZE = 10;
 
 export default function BookPages({ params }: Props) {
   const { bookId } = use(params);
+  return <BookPageList key={bookId} bookId={bookId} />;
+}
 
+function BookPageList({ bookId }: { bookId: string }) {
   const STORAGE_KEY = `devi-bookmarks-book-${bookId}`;
 
   const [pages, setPages] = useState<Page[]>([]);
@@ -56,7 +58,18 @@ export default function BookPages({ params }: Props) {
         }
 
         const data = await response.json();
+        if (controller.signal.aborted) return;
+
         setPages(data.pages);
+
+        try {
+          const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+          if (Array.isArray(saved)) {
+            setBookmarks(saved.filter((id): id is number => typeof id === "number"));
+          }
+        } catch {
+          // Keep the empty bookmark list if saved data is unavailable.
+        }
       } catch (error) {
         if (controller.signal.aborted) return;
 
@@ -75,24 +88,7 @@ export default function BookPages({ params }: Props) {
     fetchPages();
 
     return () => controller.abort();
-  }, [bookId]);
-
-  // Load bookmarks
-  useEffect(() => {
-    try {
-      const saved = JSON.parse(
-        localStorage.getItem(STORAGE_KEY) || "[]"
-      );
-
-      if (Array.isArray(saved)) {
-        setBookmarks(
-          saved.filter((id): id is number => typeof id === "number")
-        );
-      }
-    } catch {
-      setBookmarks([]);
-    }
-  }, [STORAGE_KEY]);
+  }, [bookId, STORAGE_KEY]);
 
   // Toggle bookmark
   function toggleBookmark(id: number) {
@@ -138,19 +134,22 @@ export default function BookPages({ params }: Props) {
   );
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-4xl px-5 py-16 md:py-24">
+    <main className="mx-auto min-h-screen w-full max-w-4xl px-4 py-8 sm:px-5 sm:py-16 md:py-24">
 
       {/* Back */}
-      <Button variant="ghost" size="sm" className="mb-10">
-        <Link href="/">
-          <ArrowLeft className="size-4" />
-          Back to Books
-        </Link>
+      <Button
+        variant="ghost"
+        className="mb-5 min-h-11 sm:mb-10"
+        nativeButton={false}
+        render={<Link href="/" />}
+      >
+        <ArrowLeft className="size-4" />
+        Back to Books
       </Button>
 
       {/* Header */}
-      <div className="mb-10 space-y-3">
-        <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
+      <div className="mb-6 space-y-3 sm:mb-10">
+        <h1 className="text-3xl font-bold sm:text-4xl tracking-tight md:text-5xl">
           Book {bookId}
         </h1>
 
@@ -173,7 +172,8 @@ export default function BookPages({ params }: Props) {
             setSearch(event.target.value);
             setCurrentPage(1);
           }}
-          className="pl-10"
+          aria-label="Search page number"
+          className="min-h-11 pl-10 text-base"
         />
       </div>
 
@@ -196,7 +196,7 @@ export default function BookPages({ params }: Props) {
         <>
           <div className="overflow-hidden rounded-xl border">
             {/* Table Header */}
-            <div className="grid grid-cols-[56px_1fr_90px] items-center border-b bg-muted/40 px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <div className="grid grid-cols-[48px_minmax(0,1fr)_60px] items-center gap-x-1 border-b bg-muted/40 px-3 py-3 sm:px-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">
               <span>Save</span>
               <span>Page</span>
               <span className="text-right">Read</span>
@@ -208,7 +208,7 @@ export default function BookPages({ params }: Props) {
               return (
                 <div
                   key={page.id}
-                  className={`grid grid-cols-[56px_1fr_90px] items-center border-b px-4 py-3 last:border-b-0 ${
+                  className={`grid grid-cols-[48px_minmax(0,1fr)_60px] items-center gap-x-1 border-b px-3 py-3 sm:px-4 last:border-b-0 ${
                     starred
                       ? "bg-primary/5"
                       : "hover:bg-muted/30"
@@ -224,7 +224,7 @@ export default function BookPages({ params }: Props) {
                         : `Bookmark page ${page.page_number}`
                     }
                     aria-pressed={starred}
-                    className="flex size-9 items-center justify-center rounded-md hover:bg-muted"
+                    className="flex size-11 items-center justify-center rounded-md hover:bg-muted"
                   >
                     <Star
                       className={`size-5 ${
@@ -238,17 +238,21 @@ export default function BookPages({ params }: Props) {
                   {/* Page link */}
                   <Link
                     href={`/read/${page.id}`}
-                    className="font-medium hover:text-primary"
+                    className="py-3 font-medium wrap-anywhere hover:text-primary"
                   >
                     Page {page.page_number}
                   </Link>
 
                   {/* Read */}
                   <div className="flex justify-end">
-                    <Button variant="ghost" size="sm" >
-                      <Link href={`/read/${page.id}`}>
-                        Read
-                      </Link>
+                    <Button
+                      variant="ghost"
+                      className="min-h-11 min-w-11"
+                      nativeButton={false}
+                      render={<Link href={`/read/${page.id}`} />}
+                      aria-label={`Read page ${page.page_number}`}
+                    >
+                      Read
                     </Button>
                   </div>
                 </div>
@@ -273,6 +277,7 @@ export default function BookPages({ params }: Props) {
                 <Button
                   variant="outline"
                   size="icon"
+                  className="size-11"
                   disabled={activePage === 1}
                   onClick={() =>
                     setCurrentPage((page) => Math.max(1, page - 1))
@@ -285,6 +290,7 @@ export default function BookPages({ params }: Props) {
                 <Button
                   variant="outline"
                   size="icon"
+                  className="size-11"
                   disabled={activePage === totalPages}
                   onClick={() =>
                     setCurrentPage((page) =>

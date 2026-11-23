@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { apiUrl } from "@/lib/api-url";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, BookOpen, Star } from "lucide-react";
+import { BookOpen, Star } from "lucide-react";
 import Link from "next/link";
 
 interface Book {
@@ -15,7 +15,6 @@ const STORAGE_KEY = "devi-bookmarked-books";
 
 export default function Hero() {
   const [books, setBooks] = useState<Book[]>([]);
-  const [loaded, setLoaded] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -99,8 +98,8 @@ function toggleBookmark(id: number) {
   });
 
   return (
-    <section className="flex min-h-screen w-full flex-col items-center justify-center px-5 py-20">
-      <div className="flex w-full max-w-3xl flex-col items-center gap-10">
+    <section className="flex min-h-dvh w-full flex-col items-center justify-center px-4 py-10 sm:px-5 sm:py-20">
+      <div className="flex w-full max-w-3xl flex-col items-center gap-7 sm:gap-10">
 
         {/* Hero heading */}
         <div className="flex flex-col items-center gap-5 text-center">
@@ -143,7 +142,7 @@ function toggleBookmark(id: number) {
 
           <div className="overflow-hidden rounded-xl border bg-card">
             {/* Table header */}
-            <div className="grid grid-cols-[48px_1fr_60px] items-center border-b bg-muted/40 px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground sm:grid-cols-[56px_1fr_100px]">
+            <div className="grid grid-cols-[48px_minmax(0,1fr)_60px] items-center border-b bg-muted/40 gap-x-1 px-3 py-3 sm:px-4 text-xs font-medium uppercase tracking-wider text-muted-foreground sm:grid-cols-[56px_minmax(0,1fr)_100px]">
               <span>Save</span>
               <span>Book</span>
               <span className="text-right">Read</span>
@@ -172,7 +171,7 @@ function toggleBookmark(id: number) {
                 return (
                   <div
                     key={book.id}
-                    className={`grid grid-cols-[48px_1fr_60px] items-center border-b px-4 py-3 transition-colors last:border-b-0 sm:grid-cols-[56px_1fr_100px] ${
+                    className={`grid grid-cols-[48px_minmax(0,1fr)_60px] items-center border-b gap-x-1 px-3 py-3 sm:px-4 transition-colors last:border-b-0 sm:grid-cols-[56px_minmax(0,1fr)_100px] ${
                       starred
                         ? "bg-primary/5"
                         : "hover:bg-muted/30"
@@ -188,7 +187,7 @@ function toggleBookmark(id: number) {
                           : `Bookmark ${book.name}`
                       }
                       aria-pressed={starred}
-                      className="flex size-9 items-center justify-center rounded-md transition-colors hover:bg-muted disabled:opacity-50"
+                      className="flex size-11 items-center justify-center rounded-md transition-colors hover:bg-muted disabled:opacity-50"
                     >
                       <Star
                         className={`size-5 transition-colors ${
@@ -202,7 +201,7 @@ function toggleBookmark(id: number) {
                     {/* Book name */}
                     <Link
                       href={`/pages/${book.id}`}
-                      className="min-w-0 py-2 font-medium transition-colors hover:text-primary"
+                      className="min-w-0 py-3 font-medium wrap-anywhere transition-colors hover:text-primary"
                     >
                       {book.name}
                     </Link>
@@ -211,13 +210,12 @@ function toggleBookmark(id: number) {
                     <div className="flex justify-end">
                       <Button
                         variant="outline"
-                        size="sm"
+                        className="min-h-11 min-w-11"
+                        nativeButton={false}
+                        render={<Link href={`/pages/${book.id}`} />}
+                        aria-label={`Open ${book.name}`}
                       >
-                        <Link href={`/pages/${book.id}`}>
-                          <span className="hidden sm:inline">
-                            Open
-                          </span>
-                        </Link>
+                        Open
                       </Button>
                     </div>
                   </div>
@@ -234,7 +232,7 @@ function toggleBookmark(id: number) {
 
           {/* Footer */}
           {!loading && !error && books.length > 0 && (
-            <div className="mt-3 flex justify-between text-xs text-muted-foreground">
+            <div className="mt-3 flex flex-wrap justify-between gap-2 text-xs text-muted-foreground">
               <span>
                 Star a book to keep it at the top
               </span>

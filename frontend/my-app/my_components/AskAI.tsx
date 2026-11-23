@@ -45,8 +45,7 @@ export default function AskAI({
   return (
     <div className="space-y-2">
       <Button
-        className="w-full flex gap-2"
-        size="icon"
+        className="min-h-11 w-full gap-2"
         disabled={loading}
         onClick={handleAi}
         variant={"outline"}
@@ -60,7 +59,7 @@ export default function AskAI({
       </Button>
 
       {result && (
-        <div className="text-sm p-3 rounded-md bg-muted">
+        <div className="rounded-md bg-muted p-3 text-sm wrap-anywhere">
           {result}
         </div>
       )}

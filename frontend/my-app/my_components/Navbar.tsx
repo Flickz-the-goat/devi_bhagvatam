@@ -27,26 +27,27 @@ export default function Navbar(){
 
  }, [])
   return (
-    <nav className="sticky top-0 max-w-6xl mx-auto rounded-xl mt-4 border bg-muted p-2 px-4 border-border)">
-    <div className="flex justify-between">
-    {
-      lastRead != null && (
-      <Link href={`/pages/${lastRead.pageId}#${lastRead.shlokaId}`}>
-        <Button>
-        Last read
+    <nav className="sticky top-0 mx-4 mt-4 max-w-6xl rounded-xl border bg-muted p-2 sm:px-4 xl:mx-auto">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        {lastRead && (
+          <Button
+            className="min-h-11"
+            nativeButton={false}
+            render={<Link href={`/pages/${lastRead.pageId}#${lastRead.shlokaId}`} />}
+          >
+            Last read
+          </Button>
+        )}
+        <h1 className="text-xl text-primary">स्वार्थ</h1>
+        <Button
+          className="min-h-11"
+          variant="destructive"
+          nativeButton={false}
+          render={<Link href="/admin" />}
+        >
+          Admin
         </Button>
-      </Link>
-      )
-    }
-    <h1 className="text-primary text-xl">स्वार्थ</h1>
-   <Link href={"/admin"}>
-    <Button
-    variant={"destructive"}
-    >
-      Admin
-    </Button>
-    </Link>
-    </div>
+      </div>
     </nav>
-  )
+  );
 }

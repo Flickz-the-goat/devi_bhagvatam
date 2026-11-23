@@ -1,8 +1,9 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { apiUrl } from "@/lib/api-url";
 import Link from "next/link";
+import { Dialog } from "@base-ui/react/dialog";
 
 import {
   ArrowLeft,
@@ -10,6 +11,7 @@ import {
   BookOpen,
   ChevronLeft,
   ChevronRight,
+  X,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -109,7 +111,7 @@ function TranslationPanel({
   );
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 wrap-anywhere">
       {/* Selected verse */}
       <div className="border-b pb-6">
         <p className="mb-3 text-xs font-medium uppercase tracking-widest text-muted-foreground">
@@ -118,7 +120,7 @@ function TranslationPanel({
 
         <p
           lang="sa"
-          className="whitespace-pre-line text-lg leading-loose"
+          className="whitespace-pre-line wrap-anywhere text-lg leading-loose"
         >
           {entry.text}
         </p>
@@ -152,7 +154,7 @@ function TranslationPanel({
             return (
               <div
                 key={index}
-                className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)] gap-4 rounded-lg border p-3"
+                className="grid gap-1 rounded-lg border p-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)] sm:gap-4"
               >
                 <span
                   lang="sa"
@@ -232,6 +234,12 @@ function TranslationPanel({
 
 export default function ReadPage({ params }: Props) {
   const { pageId } = use(params);
+  return <Reader key={pageId} pageId={pageId} />;
+}
+
+const desktopReaderQuery = "(min-width: 64rem)";
+
+function Reader({ pageId }: { pageId: string }) {
 
   const [page, setPage] = useState<PageContent | null>(null);
   const [bookPages, setBookPages] = useState<BookPage[]>([]);
@@ -239,6 +247,20 @@ export default function ReadPage({ params }: Props) {
   const [selectedId, setSelectedId] = useState<number | null>(
     null
   );
+
+  const [translationOpen, setTranslationOpen] = useState(false);
+  const verseButton = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const desktop = window.matchMedia(desktopReaderQuery);
+
+    function closeOnDesktop(event: MediaQueryListEvent) {
+      if (event.matches) setTranslationOpen(false);
+    }
+
+    desktop.addEventListener("change", closeOnDesktop);
+    return () => desktop.removeEventListener("change", closeOnDesktop);
+  }, []);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -351,10 +373,8 @@ export default function ReadPage({ params }: Props) {
           {error || "Page not found"}
         </p>
 
-        <Button variant="outline">
-          <Link href="/">
-            Return to Library
-          </Link>
+        <Button variant="outline" nativeButton={false} render={<Link href="/" />}>
+          Return to Library
         </Button>
       </main>
     );
@@ -365,18 +385,21 @@ export default function ReadPage({ params }: Props) {
   // =======================================================
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-7xl px-5 py-8 md:px-8">
+    <main className="mx-auto min-h-screen w-full max-w-7xl px-4 py-5 sm:px-6 sm:py-8 md:px-8">
       {/* Top navigation */}
-      <header className="mb-8 flex flex-wrap items-center justify-between gap-4 border-b pb-6">
-        <Button variant="ghost" size="sm" >
-          <Link href={`/pages/${page.book_id}`}>
-            <ArrowLeft className="size-4" />
-            All Pages
-          </Link>
+      <header className="mb-6 grid grid-cols-[1fr_auto] items-center gap-x-2 gap-y-3 border-b pb-4 sm:mb-8 sm:grid-cols-[1fr_auto_1fr] sm:pb-6">
+        <Button
+          variant="ghost"
+          className="min-h-11 justify-self-start"
+          nativeButton={false}
+          render={<Link href={`/pages/${page.book_id}`} />}
+        >
+          <ArrowLeft className="size-4" />
+          All Pages
         </Button>
 
-        <div className="text-center">
-          <p className="text-xs text-muted-foreground">
+        <div className="col-span-2 row-start-2 text-center sm:col-span-1 sm:col-start-2 sm:row-start-1">
+          <p lang="sa" className="text-xs text-muted-foreground">
             देवीभागवतम्
           </p>
 
@@ -385,48 +408,42 @@ export default function ReadPage({ params }: Props) {
           </h1>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="col-start-2 row-start-1 flex items-center justify-self-end gap-2 sm:col-start-3">
           <Button
             variant="outline"
             size="icon"
+            className="size-11"
             disabled={!previousPage}
+            nativeButton={!previousPage}
+            render={previousPage ? <Link href={`/read/${previousPage.id}`} /> : undefined}
             aria-label="Previous page"
           >
-            {previousPage ? (
-              <Link href={`/read/${previousPage.id}`}>
-                <ChevronLeft className="size-4" />
-              </Link>
-            ) : (
-              <ChevronLeft className="size-4" />
-            )}
+            <ChevronLeft className="size-4" />
           </Button>
 
           <Button
             variant="outline"
             size="icon"
+            className="size-11"
             disabled={!nextPage}
+            nativeButton={!nextPage}
+            render={nextPage ? <Link href={`/read/${nextPage.id}`} /> : undefined}
             aria-label="Next page"
           >
-            {nextPage ? (
-              <Link href={`/read/${nextPage.id}`}>
-                <ChevronRight className="size-4" />
-              </Link>
-            ) : (
-              <ChevronRight className="size-4" />
-            )}
+            <ChevronRight className="size-4" />
           </Button>
         </div>
       </header>
 
       {/* Main reading layout */}
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)]">
 
         {/* =========================================
-            LEFT: SANSKRIT READER
+            SANSKRIT READER
         ========================================= */}
 
-        <section className="min-w-0">
-          <div className="mb-6 flex items-center justify-between">
+        <section className="min-w-0 lg:col-start-2 lg:row-start-1">
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-2">
             <div>
               <h2 className="text-xl font-semibold">
                 Original Sanskrit
@@ -492,24 +509,28 @@ export default function ReadPage({ params }: Props) {
                 <button
                   key={entry.id}
                   type="button"
-                  onClick={() =>
-                    setSelectedId(entry.id)
-                  }
+                  onClick={(event) => {
+                    setSelectedId(entry.id);
+                    if (!window.matchMedia(desktopReaderQuery).matches) {
+                      verseButton.current = event.currentTarget;
+                      setTranslationOpen(true);
+                    }
+                  }}
                   aria-pressed={selected}
-                  className={`w-full rounded-xl border p-5 text-left transition-all duration-200 ${
+                  className={`w-full rounded-xl border p-4 text-left sm:p-5 transition-all duration-200 ${
                     selected
                       ? "border-primary bg-primary/5"
                       : "border-border hover:border-primary/40 hover:bg-muted/30"
                   }`}
                 >
-                  <p
+                  <span
                     lang="sa"
-                    className="whitespace-pre-line text-lg leading-[2.2] md:text-xl"
+                    className="block whitespace-pre-line wrap-anywhere text-lg leading-[2.2] md:text-xl"
                   >
                     {entry.text}
-                  </p>
+                  </span>
 
-                  <div className="mt-4 flex items-center justify-between">
+                  <span className="mt-4 flex items-center justify-between gap-2">
                     <span className="text-xs text-muted-foreground">
                       {entry.translation
                         ? "Word meanings available"
@@ -523,7 +544,7 @@ export default function ReadPage({ params }: Props) {
                           : "text-muted-foreground"
                       }`}
                     />
-                  </div>
+                  </span>
                 </button>
               );
             })}
@@ -531,10 +552,10 @@ export default function ReadPage({ params }: Props) {
         </section>
 
         {/* =========================================
-            RIGHT: TRANSLATION
+            DESKTOP TRANSLATION
         ========================================= */}
 
-        <aside className="min-w-0">
+        <aside className="hidden min-w-0 lg:col-start-1 lg:row-start-1 lg:block">
           <div className="lg:sticky lg:top-8">
             <div className="mb-6">
               <h2 className="text-xl font-semibold">
@@ -546,39 +567,70 @@ export default function ReadPage({ params }: Props) {
               </p>
             </div>
 
-            <div className="max-h-none overflow-y-auto rounded-xl border bg-card p-5 md:p-6 lg:max-h-[calc(100vh-10rem)]">
+            <div className="max-h-none overflow-y-auto rounded-xl border bg-card p-5 md:p-6 lg:max-h-[calc(100dvh-10rem)]">
               <TranslationPanel entry={selectedEntry} />
             </div>
           </div>
         </aside>
       </div>
 
+      <Dialog.Root
+        open={translationOpen && selectedEntry !== null}
+        onOpenChange={setTranslationOpen}
+      >
+        <Dialog.Portal>
+          <Dialog.Backdrop className="fixed inset-0 z-40 bg-black/60" />
+          <Dialog.Popup
+            finalFocus={verseButton}
+            className="fixed inset-x-0 bottom-0 z-50 mx-auto flex max-h-[85dvh] w-full max-w-xl flex-col overflow-hidden rounded-t-2xl border bg-card text-card-foreground shadow-xl"
+          >
+            <div className="flex shrink-0 items-center justify-between gap-3 border-b px-4 py-2 sm:px-6">
+              <Dialog.Title className="text-xl font-semibold">
+                Word Meanings
+              </Dialog.Title>
+
+              <Dialog.Close
+                render={<Button variant="ghost" size="icon" className="size-11" />}
+                aria-label="Close word meanings"
+              >
+                <X className="size-5" />
+              </Dialog.Close>
+            </div>
+
+            <div className="min-h-0 overflow-y-auto overscroll-contain wrap-anywhere px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6">
+              <TranslationPanel entry={selectedEntry} />
+            </div>
+          </Dialog.Popup>
+        </Dialog.Portal>
+      </Dialog.Root>
+
       {/* Bottom navigation */}
-      <footer className="mt-16 flex items-center justify-between border-t py-8">
-        {previousPage ? (
-          <Button variant="outline" >
-            <Link href={`/read/${previousPage.id}`}>
-              <ChevronLeft className="size-4" />
-              Previous
-            </Link>
+      <footer className="mt-10 grid grid-cols-[1fr_auto_1fr] items-center gap-2 border-t py-6 sm:mt-16 sm:py-8">
+        {previousPage && (
+          <Button
+            variant="outline"
+            className="col-start-1 row-start-1 min-h-11 justify-self-start"
+            nativeButton={false}
+            render={<Link href={`/read/${previousPage.id}`} />}
+          >
+            <ChevronLeft className="size-4" />
+            Previous
           </Button>
-        ) : (
-          <div />
         )}
 
-        <span className="text-sm text-muted-foreground">
+        <span className="col-start-2 row-start-1 text-center text-sm text-muted-foreground">
           Page {page.page_number}
         </span>
 
-        {nextPage ? (
-          <Button >
-            <Link href={`/read/${nextPage.id}`}>
-              Next
-              <ChevronRight className="size-4" />
-            </Link>
+        {nextPage && (
+          <Button
+            className="col-start-3 row-start-1 min-h-11 justify-self-end"
+            nativeButton={false}
+            render={<Link href={`/read/${nextPage.id}`} />}
+          >
+            Next
+            <ChevronRight className="size-4" />
           </Button>
-        ) : (
-          <div />
         )}
       </footer>
     </main>
